@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChatGroup </title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --sidebar-bg: #1e1b4b;
+            --chat-bg: #f8fafc;
+            --white: #ffffff;
+            --danger: #ef4444;
+            --success: #10b981;
+            --glass: rgba(255, 255, 255, 0.95);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Tajawal', sans-serif; }
+
+        body {
+            background: var(--bg-gradient);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #1e293b;
+        }
+
+     
+        #login-ui {
+            background: var(--glass);
+            padding: 40px;
+            border-radius: 24px;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        #login-ui h2 { color: var(--primary); margin-bottom: 25px; font-weight: 700; }
+
+        #chat-ui {
+            display: none;
+            width: 95vw;
+            height: 90vh;
+            background: var(--white);
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+            display: none; 
+        }
+
+      
+        .sidebar {
+            width: 320px;
+            background: var(--sidebar-bg);
+            color: var(--white);
+            display: flex;
+            flex-direction: column;
+            padding: 24px;
+        }
+
+        .sidebar h3 { font-size: 1.2rem; margin-bottom: 20px; color: #a5b4fc; }
+
+        .group-list { flex: 1; overflow-y: auto; }
+
+        .group-item {
+            padding: 14px 18px;
+            margin-bottom: 8px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s;
+        }
+
+        .group-item:hover { background: rgba(255,255,255,0.15); transform: translateX(-5px); }
+        .group-item.active { background: var(--primary); box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4); }
+
+      
+        .chat-area { flex: 1; display: flex; flex-direction: column; background: var(--chat-bg); }
+
+        .chat-header {
+            padding: 20px 30px;
+            background: var(--white);
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #messages {
+            flex: 1;
+            padding: 25px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+      
+        .msg {
+            max-width: 65%;
+            padding: 12px 18px;
+            border-radius: 18px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            position: relative;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .msg-me {
+            background: var(--primary);
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+
+        .msg-other {
+            background: var(--white);
+            color: #1e293b;
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+        }
+
+        .msg small { display: block; margin-bottom: 4px; font-weight: bold; font-size: 0.75rem; opacity: 0.8; }
+
+    
+        .input-area {
+            padding: 20px 30px;
+            background: var(--white);
+            display: flex;
+            gap: 12px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 20px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            outline: none;
+            transition: 0.2s;
+        }
+
+        input:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1); }
+
+        button {
+            padding: 12px 24px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        button:hover { background: var(--primary-hover); transform: translateY(-1px); }
+
+       
+        .admin-panel {
+            background: #065f46;
+            padding: 15px;
+            border-radius: 16px;
+            margin-top: 15px;
+            border: 1px solid #059669;
+        }
+
+        .admin-panel strong { font-size: 0.85rem; display: block; margin-bottom: 10px; color: #a7f3d0; }
+
+      
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        .delete-btn { color: #fca5a5; background: none; padding: 5px; }
+        .delete-btn:hover { color: var(--danger); }
+
+        .locked-view {
+            flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            background: url('https://www.transparenttextures.com/patterns/cubes.png');
+        }
+    </style>
+</head>
+<body>
+
+    <div id="login-ui">
+        <div style="font-size: 50px; margin-bottom: 10px;">💬</div>
+        <h2>مرحباً بك في ChatGroup</h2>
+        <p style="color: #64748b; margin-bottom: 25px;">سجل دخولك للبدء بالمحادثة</p>
+        <input type="email" id="email" placeholder="البريد الإلكتروني (example@mail.com)">
+        <button onclick="startChat()" style="width: 100%; margin-top: 10px;">دخول سريع</button>
+    </div>
+
+    <div id="chat-ui">
+        <div class="sidebar">
+            <h3 style="display: flex; align-items: center; gap: 10px;">
+                <span style="background: var(--primary); padding: 5px 10px; border-radius: 8px;">CP</span>
+                المجموعات
+            </h3>
+            
+            <div id="group-list" class="group-list"></div>
+
+            <div style="margin-top:20px; padding-top:20px; border-top: 1px solid rgba(255,255,255,0.1);">
+                <input type="text" id="newGroupName" placeholder="اسم المجموعة..." 
+                       style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; margin-bottom: 10px;">
+                <button onclick="createGroup()" style="width:100%; background: var(--success);">+ إنشاء مجموعة</button>
+            </div>
+
+            <div id="admin-panel" class="admin-panel" style="display:none;">
+                <strong>🔔 طلبات معلقة</strong>
+                <div id="pending-list"></div>
+            </div>
+
+            <div style="margin-top: auto; padding-top: 20px; font-size: 0.8rem; border-top: 1px solid rgba(255,255,255,0.1);">
+                <span style="opacity: 0.6;">متصل الآن باسم:</span><br>
+                <span id="user-display" style="font-weight: bold; color: #818cf8;"></span>
+            </div>
+        </div>
+
+        <div class="chat-area">
+            <div class="chat-header">
+                <div id="group-header" style="font-weight: 700; font-size: 1.1rem;">يرجى اختيار مجموعة من القائمة</div>
+                <div id="status-dot" style="width: 10px; height: 10px; background: #cbd5e1; border-radius: 50%;"></div>
+            </div>
+            
+            <div id="chat-box" style="display:none; flex:1; flex-direction:column;">
+                <div id="messages"></div>
+                <div class="input-area">
+                    <input type="text" id="msgText" placeholder="اكتب رسالة هنا..." onkeypress="if(event.key==='Enter') send()">
+                    <button onclick="send()">إرسال</button>
+                </div>
+            </div>
+
+            <div id="locked-box" class="locked-view" style="display:none;">
+                <div style="background: white; padding: 40px; border-radius: 30px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.05);">
+                    <div style="font-size: 60px; margin-bottom: 20px;">🔒</div>
+                    <h3 style="margin-bottom: 10px;">هذه المجموعة مغلقة</h3>
+                    <p style="color: #64748b; margin-bottom: 25px;">تحتاج إلى إذن من المدير للدخول ومراجعة الرسائل.</p>
+                    <button onclick="requestToJoin()" style="background: #f59e0b; padding: 12px 40px;">إرسال طلب انضمام</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+       
+        const socket = io();
+        let userEmail = "", currentGroup = "", groupsData = [];
+
+        function startChat() {
+            const val = document.getElementById('email').value.toLowerCase().trim();
+            if(val.includes('@')) {
+                userEmail = val;
+                document.getElementById('login-ui').style.display = 'none';
+                document.getElementById('chat-ui').style.display = 'flex';
+                document.getElementById('user-display').innerText = userEmail;
+            } else {
+                alert("يرجى إدخال بريد إلكتروني صحيح");
+            }
+        }
+
+        function createGroup() {
+            const name = document.getElementById('newGroupName').value.trim();
+            if(name) {
+                socket.emit('createGroup', { name: name, admin: userEmail });
+                document.getElementById('newGroupName').value = "";
+            }
+        }
+
+        socket.on('initGroups', (groups) => {
+            groupsData = groups;
+            renderGroups();
+            renderAdminPanel();
+        });
+
+        function renderGroups() {
+            const list = document.getElementById('group-list');
+            list.innerHTML = "";
+            groupsData.forEach(g => {
+                const isMember = g.members.member.includes(userEmail);
+                const isAdmin = g.admin === userEmail;
+                const div = document.createElement('div');
+                div.className = `group-item ${currentGroup === g.name ? 'active' : ''}`;
+                div.innerHTML = `
+                    <div onclick="selectGroup('${g.name}')" style="flex:1;">
+                        # ${g.name} ${isMember ? '' : '🔒'}
+                    </div>
+                    ${isAdmin ? `<button onclick="confirmDelete('${g.name}')" class="delete-btn">🗑️</button>` : ''}
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        function selectGroup(name) {
+            currentGroup = name;
+            renderGroups();
+            const group = groupsData.find(g => g.name === name);
+            if(!group) return;
+            
+            const isMember = group.members.member.includes(userEmail);
+            document.getElementById('group-header').innerText = "# " + name;
+            document.getElementById('status-dot').style.background = "#10b981";
+            
+            if (isMember) {
+                document.getElementById('chat-box').style.display = 'flex';
+                document.getElementById('locked-box').style.display = 'none';
+                document.getElementById('messages').innerHTML = "";
+                socket.emit('joinGroup', { email: userEmail, group: name });
+            } else {
+                document.getElementById('chat-box').style.display = 'none';
+                document.getElementById('locked-box').style.display = 'flex';
+            }
+        }
+
+        function confirmDelete(name) {
+            if(confirm(`حذف مجموعة "${name}" نهائياً؟`)) {
+                socket.emit('deleteGroup', { name: name, admin: userEmail });
+                if(currentGroup === name) {
+                    currentGroup = "";
+                    document.getElementById('chat-box').style.display = 'none';
+                    document.getElementById('group-header').innerText = "يرجى اختيار مجموعة";
+                }
+            }
+        }
+
+        function requestToJoin() {
+            socket.emit('requestJoin', { group: currentGroup, user: userEmail });
+            alert("تم إرسال الطلب!");
+        }
+
+        function renderAdminPanel() {
+            const panel = document.getElementById('admin-panel');
+            const list = document.getElementById('pending-list');
+            list.innerHTML = "";
+            let count = 0;
+            const myEmail = userEmail.toLowerCase().trim();
+
+            groupsData.forEach(g => {
+                if (g.admin === myEmail && g.pending && g.pending.request) {
+                    const reqs = Array.isArray(g.pending.request) ? g.pending.request : [g.pending.request];
+                    reqs.forEach(reqUser => {
+                        if(reqUser) {
+                            count++;
+                            const div = document.createElement('div');
+                            div.className = 'req-item';
+                            div.style = "display:flex; justify-content:space-between; margin-bottom:5px; align-items:center;";
+                            div.innerHTML = `<span style="font-size:10px; color:white;">${reqUser}</span> 
+                                             <button onclick="approve('${g.name}','${reqUser}')" style="padding:2px 8px; font-size:10px;">قبول</button>`;
+                            list.appendChild(div);
+                        }
+                    });
+                }
+            });
+            panel.style.display = count > 0 ? 'block' : 'none';
+        }
+
+        function approve(group, user) {
+            socket.emit('approveUser', { group, user });
+        }
+
+        function send() {
+            const input = document.getElementById('msgText');
+            if(input.value.trim() && currentGroup) {
+                socket.emit('chatMessage', { user: userEmail, text: input.value, group: currentGroup });
+                input.value = "";
+            }
+        }
+
+        socket.on('message', (data) => { if(data.group === currentGroup) displayMsg(data); });
+        socket.on('loadHistory', (msgs) => msgs.forEach(displayMsg));
+
+        function displayMsg(data) {
+            const div = document.createElement('div');
+            const isMe = data.user === userEmail;
+            div.className = `msg ${isMe ? 'msg-me' : 'msg-other'}`;
+            div.innerHTML = `<small>${data.user}</small>${data.text}`;
+            const container = document.getElementById('messages');
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        socket.on('userApproved', (data) => {
+            if(data.user === userEmail) {
+                alert(`مبروك! تم قبولك في ${data.group}.`);
+                selectGroup(data.group);
+            }
+        });
+    </script>
+</body>
+</html>
